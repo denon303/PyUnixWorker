@@ -26,15 +26,15 @@ tPass = "xxxxxxxxx"
 passwdPrompts = ["password:", "Password:", "password: ", "Password: " "password: ' ", "Password ' "]
 
 # JUMPNODES DICTIONARIES...
-jump01 =  {  "hostname": "jump01", "ip": "10.0.0.1", "login" : "root" , "pass" : "madrid01", "jump": None, "strictoption" : 1, "Description" : "Salto Alternativa" } # Alternativa
-#jump02 =   {  "hostname": "jump02",  "ip": "10.0.0.1" , "login" : tUser, "pass" : tPass, "jump": jump01, "Description" : "Salto Empresas" } #Salto Empresas
-jump03   =  {  "hostname": "jump03", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": None, "Description" : "Salto RIMA" } # Salto RIMA
-jump04 =  {  "hostname": "jump04", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": None, "Description" : "Salto NIMBA" } # Salto RIMA
-jump05 =  {  "hostname": "jump05", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": None, "Description" : "Salto NIMBA" } # Salto NIMBA
-#jump06 =  {  "hostname": "jump06", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": jump02, "Description" : "Salto Moviles" } # Salto Moviles 
-#jump07 =  {  "hostname": "jump07", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": jump02, "Description" : "Salto Moviles" } # Salto Moviles 
+jumpNode1 =  {  "hostname": "jump01", "ip": "10.0.0.1", "login" : "root" , "pass" : "madrid01", "jump": None, "strictoption" : 1, "Description" : "Salto Alternativa" } # Alternativa
+jumpNode2 =   {  "hostname": "jump02",  "ip": "10.0.0.1" , "login" : tUser, "pass" : tPass, "jump": jump01, "Description" : "Salto Empresas" } #Salto Empresas
+jumpNode3   =  {  "hostname": "jump03", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": None, "Description" : "Salto RIMA" } # Salto RIMA
+jumpNode4 =  {  "hostname": "jump04", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": None, "Description" : "Salto NIMBA" } # Salto RIMA
+jumpNode5 =  {  "hostname": "jump05", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": None, "Description" : "Salto NIMBA" } # Salto NIMBA
+jumpNode6 =  {  "hostname": "jump06", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": jumpNode2, "Description" : "Salto Moviles" } # Salto Moviles 
+jumpNode7 =  {  "hostname": "jump07", "ip": "10.0.0.1", "login" : tUser , "pass" : tPass, "jump": jumpNode2, "Description" : "Salto Moviles" } # Salto Moviles 
 
-jumpNodes = [ jump01, jump03, jump04, jump05 ]
+jumpNodes = [ jumpNode1, jumpNode2, jumpNode3, jumpNode4, jumpNode5, jumpNode6]
 
 # TARGET SERVERS VARIABLES
 targetServer = None
@@ -42,10 +42,11 @@ targetServer = None
 # EXCEL VARIABLES
 inputExcl = openpyxl.load_workbook('C:/PETICION QUITAR EXPIRACION.xlsx') 
 inputSheet= inputExcl["Hoja1"]
-#inputSheet= inputExcl.get_sheet_by_name(name = 'Hoja1')
 inventExcl = openpyxl.load_workbook('C:/InventarioUnix.xlsx', read_only = True, data_only = True)
 inventSheet= inventExcl["t_inventario"]
-#inventSheet= inventExcl.get_sheet_by_name(name = 't_inventario')
+
+shuffle(jumpNodes)
+warnings.simplefilter("ignore")
 
 class DevNull:
     def write(self, msg):
@@ -53,10 +54,10 @@ class DevNull:
 
 def StartWork():
     workcounter = 1
-    for row in inputSheet.iter_rows(min_row=150, max_row=inputSheet.max_row, min_col=1, max_col=1, values_only=True):
+    for row in inputSheet.iter_rows(min_row=11, max_row=inputSheet.max_row, min_col=1, max_col=1, values_only=True):
         for cell in row:
             SearchInventory(workcounter, cell)
-            time.sleep(5)
+            time.sleep(1)
             workcounter += 1
             
 def SearchInventory(number, hostname):
@@ -68,7 +69,6 @@ def SearchInventory(number, hostname):
         for cell in row: 
             if str(hostname) == cell.value:
                 targetServer = { "hostname": hostname, "ip": inventSheet.cell(row=cell.row, column=13).value, "pass": inventSheet.cell(row=cell.row, column=14).value }
-                #print (targetServer)
                 JumpNodeSearch(targetServer)
                 break
 
@@ -78,30 +78,26 @@ def JumpNodeSearch(targetServer):
     state = "SEARCHJUMPNODE"
     print ("\n     Buscando Nodo de salto, puede tardar varios minutos...\n")
     tryJumpNode = 1
+
     for jumpNode in jumpNodes:
-        if state == "NO-RESPONSE-FROM-JUMPNODE":
-            print("Cambia el estado a: NO-RESPONSE-FROM-JUMPNODE")
-            break
-        elif state == "LOGIN-USER-OK":
+        if state == "LOGIN-PASSWD-OK":
+            print("     Conectado con USER al servidor destino... State: " + state)
             break
         elif state == "LOGIN-PASSWD-FAIL":
+            print("\n     *** Hay conectividad contra el servidor destino desde salto ------------ " + jumpNode["hostname"], jumpNode["ip"] + " pero la contraseña de: " + tUser + " es incorrecta... State: " + state)
             break
-        elif state == "TARGET-REACHED-FROM-JUMPNODE":
-            print("Cambia el estado a: TARGET-REACHED-FROM-JUMPNODE")
+        elif state == "LOGIN-PASSWD-OK":
+            print("\n     *** Hay conectividad contra el servidor destino desde salto ------------ " + jumpNode["hostname"], jumpNode["ip"] + " pero la contraseña de: " + tUser + " es incorrecta... State: " + state)
             break
-#        if state == "CONNECT-FAIL-JUMPNODE":
-#            continue
-        else:
-            if jumpNode["jump"] == None:
-                ConnectToJumpNode(jumpNode, targetServer, tUser, tPass, tryJumpNode) #, 10, 20)
-            else:
-                pass
-                #ConnectToJumpNode(jumpNode, targetServer, tUser, targetServer["pass"], tryJumpNode) #, 10, 20)
-        time.sleep(4)
+        elif jumpNode["jump"] == None:
+            ConnectToJumpNode(jumpNode, targetServer, tUser, tPass, tryJumpNode)
+        else: # Falta por implementar el salto encadenado CHAIN-JUMP...
+            pass
+        time.sleep(1)
         tryJumpNode += 1
-    print("# Esta tarea a terminado en este servidor con estado: " + state)
                
 def GetOutputSSH(bufferSize, sleepTime):
+    outputSplitLines = []
     time.sleep(sleepTime)
     output = remote_conn.recv(bufferSize)
     outputSplitLines = str(output).split("\\r\\n")  
@@ -109,44 +105,36 @@ def GetOutputSSH(bufferSize, sleepTime):
 
 def SendString(commandString, jumpNode, targetServer, hidePass):
     if hidePass:
-        print ("     Enviando contraseña: " + "********"  + " desde: " + jumpNode["hostname"] + " hacia: " + targetServer["hostname"])
+        print ("      *** Enviando contraseña: " + "********"  + " Origen: " + jumpNode["hostname"] + " <-----> Destino: " + targetServer["hostname"])
     else:
-        print ("     Ejecutando: " + commandString + " desde: " + jumpNode["hostname"] + " hacia: " + targetServer["hostname"])
+        print ("      *** Ejecutando: " + commandString + " Origen: " + jumpNode["hostname"] + " <-----> Destino: " + targetServer["hostname"])
     remote_conn.send(commandString  + '\n')
 
-def ConnectToJumpNode(jumpNode, targetServer, user, passwd, tryJumpNode): #, retry_interval, retry_timeout):
+def ConnectToJumpNode(jumpNode, targetServer, user, passwd, tryJumpNode):
     global state
     global client
     global remote_conn
-    
-##    retry_interval = float(retry_interval)
-##    retry_timeout = int(retry_timeout)
-##    timeout_start = time.time()
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     
-##    while time.time() < timeout_start + retry_timeout:
-##        time.sleep(retry_interval)  
-
     state = "CONNECT-TRY-JUMPNODE"
-
+    
     try:
-        print ("     " + str(tryJumpNode) + ") - Intentando autenticar con tUSER desde: " + jumpNode["hostname"] + " " + str(jumpNode["ip"]) + " hacia: " + str(targetServer["hostname"] + " " + str(targetServer["ip"])))
+        print ("     " + str(tryJumpNode) + ") - Intentando autenticar con USER desde: " + jumpNode["hostname"] + " " + str(jumpNode["ip"]) + " Destino: " + str(targetServer["hostname"] + " " + str(targetServer["ip"])))
            
-        client.connect(jumpNode["ip"], username=jumpNode["login"], password=jumpNode["pass"], timeout=10) # banner_timeout=60
+        client.connect(jumpNode["ip"], username=jumpNode["login"], password=jumpNode["pass"], timeout=8)
         remote_conn = client.invoke_shell()
         
         state = "CONNECTED-TO-JUMPNODE"
-
+        
         if jumpNode["strictoption"] == 1:
             SendString('ssh -o StrictHostKeyChecking=no ' + user + '@' + str(targetServer["ip"]), jumpNode, targetServer, False)
-        if jumpNode["strictoption"] == 2:
+        elif jumpNode["strictoption"] == 2:
             SendString('ssh ' + user + '@' + str(targetServer["ip"]), jumpNode, targetServer, False)
         
         if user != "root":
-            pass
-            LoginToServerWithTUSER(GetOutputSSH(1000,6), jumpNode, targetServer, user, passwd)
+            LoginToServerWithTUSER(GetOutputSSH(5000,8), jumpNode, targetServer, user, passwd)
         else:
             pass
             #LoginToGetOutputSSH(1000,6), jumpNode, targetServer, user, passwd)
@@ -175,62 +163,67 @@ def ConnectToJumpNode(jumpNode, targetServer, user, passwd, tryJumpNode): #, ret
     except paramiko.ssh_exception.SSHException as e:
         print('SSH transport is available!')
         state = "CONNECT-FAIL-JUMPNODE"
-    except:
-        print("### GENERAL EXCEPTION Code(8)...")
-        state = "CONNECT-FAIL-JUMPNODE"
     finally:
         if client:
             client.close()
 
 def LoginToServerWithTUSER(outputSplitLines, jumpNode, targetServer, user, passwd):
+    global state
     state = "LOGIN-USER-PASSWD-PROMPT"
-    print(str(outputSplitLines[len(outputSplitLines)-1]))
-    tempWords = str(outputSplitLines[len(outputSplitLines)-1].Split(" "))
-    print(tempWords)
+    #print(str(outputSplitLines[len(outputSplitLines)-1]))
+    tempWords = str(outputSplitLines[len(outputSplitLines)-1]).split(" ")
+    #print(tempWords)
+
+    match = False
     
-    #if any(w in passwdPrompts for w in tempWords):
     for w in passwdPrompts:
-        if w in tempWords:
-            match = True
+        for h in tempWords:
+            if h == w:
+                match = True
+                break
+        else:
+            pass
     
     if match == True:
         state = "TARGET-REACHED-FROM-JUMPNODE"
-        #AuthTUSER(jumpNode, targetServer, user, passwd)
-        print (state + " ############################################################################")
-        return 0
+        AuthTUSER(jumpNode, targetServer, user, passwd)
+        match = False
     else:
         state = "NO-RESPONSE-FROM-JUMPNODE"
-        return 1
            
 def AuthTUSER(jumpNode, targetServer, user, passwd):
+    global state
     state = "LOGIN-USER-PASSWD-SEND"
-    SendString(passwd, jumpNode, targetServer, False) #targetServer["pass"]
+    SendString(passwd, jumpNode, targetServer, True)
     time.sleep(5)
     output = remote_conn.recv(5000)
-    print(str(output))
+    
     if str(output).find("DISPLAY=(") > 0:
        state = "LOGIN-USER-LOGPROMPT"
        SendString("\n\n", targetServer, False)
        time.sleep(2)
        output = remote_conn.recv(5000)
        if str(output).find("$") > 0: 
-           print("     OK [TUSER] - Conectado como: " + user)
-           state = "LOGIN-USER-OK"
-           #MakeWork()
+           print("\n     OK [TUSER] - Conectado como: " + user)
+           state = "LOGIN-PASSWD-OK"
+           #Worker()
        else:
-           print("     NOK [TUSER] - Cambiando estado a: " + state)
+           print("\n     NOK [TUSER] - Cambiando estado a: " + state)
            state = "LOGIN-PASSWD-FAIL"
-           return 1
+           return 0
     else:
         if str(output).find("$") > 0: 
             print("     OK [TUSER] - Conectado como: " + user)
-            state = "LOGIN-USER-OK"
-            #MakeWork()
+            state = "LOGIN-PASSWD-OK"
+            #Worker()
         else:
             print("     NOK [TUSER] - Cambiando estado a: " + state)
             state = "LOGIN-PASSWD-FAIL"
-            return 1
-
+            return 0
+        
+def Worker():
+    """ PUT CODE FOR WORK ON EACH TARGETSERVER """
+    pass
 
 sys.stderr = DevNull()   
 StartWork()
