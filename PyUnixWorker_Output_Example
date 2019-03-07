@@ -1,0 +1,35 @@
+*********************************************************************************************
+***                        PYUNIXWORKER OUTPUT EXAMPLE FROM WINDOWS                       ***
+*********************************************************************************************
+
+ *** Tarea:1 Hostname: targetServer1
+ *** Buscando datos en el inventario para targetServer1 ...
+
+     Buscando Nodo de salto, puede tardar varios minutos...
+
+     1) - Intentando autenticar con USER Origen: jumpNode1 101.1.19.1 Destino: targetServer1 80.9.9.14
+      *** Ejecutando: ssh -o StrictHostKeyChecking=no tUser@80.9.9.14 Origen: jumpNode1 <-----> Destino: targetServer1
+      *** Enviando contraseña: ******** Origen: jumpNode1 <-----> Destino: targetServer1
+
+     2) - Intentando autenticar con USER Origen: jumpNode2 102.2.19.1 Destino: targetServer1 80.9.9.14
+      *** Ejecutando: ssh -o StrictHostKeyChecking=no tUser@80.9.9.14 Origen: jumpNode2 <-----> Destino: targetServer1
+      *** Enviando contraseña: ******** Origen: jumpNode2 <-----> Destino: targetServer1
+
+      *** Hay conectividad contra el servidor destino desde salto: jumpNode2 102.2.19.1
+          pero la contraseña de: tUser es incorrecta... State: LOGIN-PASSWD-FAIL
+
+ *********************************************************************************************
+
+ *** Tarea:2 Hostname: targetServer2
+ *** Buscando datos en el inventario para targetServer2 ...
+
+     Buscando Nodo de salto, puede tardar varios minutos...
+
+     1) - Intentando autenticar con USER desde: jumpNode1 101.2.19.1 Destino: targetServer2 80.9.9.15
+      *** Ejecutando: ssh -o StrictHostKeyChecking=no tUser@80.9.9.15 Origen: jumpNode1 <-----> Destino: targetServer2
+      *** Enviando contraseña: ******** Origen: pregest02 <-----> Destino: desomegadb01
+  
+      *** Hay conectividad contra el servidor destino desde salto: jumpNode1 102.2.19.1
+         Conexion establecida con el usuario: tUser Contraseña valida... State: LOGIN-PASSWD-OK
+
+ *********************************************************************************************
