@@ -3,7 +3,7 @@
 #description     :Aplicacion consola para realizar tareas masivas mediante ssh en maquinas Unix/Linux.
 #author          :Daniel Bejar Diaz
 #date            :31/01/2019
-#version         :0.1
+#version         :0.3
 #usage           :python PyUnixWorker.py
 #notes           :
 #python_version  :3.7.1  
